@@ -448,9 +448,18 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Veuillez sélectionner au moins un fichier 3D (STL/PLY) avant de visualiser.');
       return;
     }
-    // Charge les modèles et affiche la modale
-    loadViewerModels().catch(() => {});
-    viewerModal.style.display = 'block';
+    // Affiche la modale avant de charger les modèles pour que le canvas ait une taille correcte
+    viewerModal.style.display = 'flex';
+    // Charge les modèles et redimensionne la fenêtre de rendu une fois chargés
+    loadViewerModels()
+      .then(() => {
+        if (genericRenderWindow) {
+          genericRenderWindow.resize();
+          const rw = genericRenderWindow.getRenderWindow?.();
+          if (rw) rw.render();
+        }
+      })
+      .catch(() => {});
   });
 
   // Bouton de fermeture de la visionneuse

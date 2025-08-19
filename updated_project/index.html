@@ -105,8 +105,8 @@
   <!-- Script principal de l'application -->
   <!-- JSZip pour la création d'archives -->
   <script src="lib/jszip.min.js"></script>
-  <!-- Import de vtk.js via CDN pour la visualisation 3D -->
-  <script src="https://unpkg.com/vtk.js"></script>
+  <!-- Import de vtk.js via CDN pour la visualisation 3D avec repli local -->
+  <script src="https://unpkg.com/vtk.js" onerror="this.onerror=null;this.src='lib/vtk.js';"></script>
   <!-- Script principal de l'application -->
   <script src="app.js"></script>
 </body>
