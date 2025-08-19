@@ -80,73 +80,62 @@ document.addEventListener('DOMContentLoaded', () => {
   // On insère le contenu du fichier SVG et on associe les écouteurs aux groupes de dents.
   function createDentalChart() {
     const container = document.getElementById('dental-chart');
-    container.innerHTML = '';
-    // Charger le fichier SVG contenant les arcades
-    fetch('Arcades.svg')
-      .then((res) => res.text())
-      .then((svgText) => {
-        container.innerHTML = svgText;
-        const svgElement = container.querySelector('svg');
-        if (svgElement) {
-          // Adapter la taille du SVG au conteneur
-          svgElement.style.width = '100%';
-          svgElement.style.height = 'auto';
-        }
-        // Récupère tous les groupes de dents identifiés par un id commençant par FDI
-        const groups = container.querySelectorAll('g[id^="FDI_"]');
-        groups.forEach((group) => {
-          const id = group.id;
-          const match = id.match(/\d+/);
-          if (!match) return;
-          const fdi = match[0];
-          // Initialiser l'état de la dent si nécessaire
-          if (!state.dents[fdi]) {
-            state.dents[fdi] = { status: 'present', comps: [] };
-          }
-          // Écouteurs d'événements pour les interactions
-          group.addEventListener('click', (e) => {
-            // Ignorer clic droit
-            if (e.button === 2) return;
-            e.preventDefault();
-            handleToothSingleClick(group);
-          });
-          group.addEventListener('dblclick', (e) => {
-            e.preventDefault();
-            handleToothDoubleClick(group);
-          });
-          group.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            contextTargetFdi = fdi;
-            // Mettre à jour les éléments sélectionnés dans le menu
-            const currentComps = state.dents[fdi].comps;
-            Array.from(contextMenu.querySelectorAll('li')).forEach((li) => {
-              const compCode = li.dataset.comp;
-              if (currentComps.includes(compCode)) {
-                li.classList.add('selected');
-              } else {
-                li.classList.remove('selected');
-              }
-            });
-            contextMenu.style.display = 'block';
-            contextMenu.style.left = `${e.pageX}px`;
-            contextMenu.style.top = `${e.pageY}px`;
-          });
-          // Crée une étiquette pour cette dent
-          const label = document.createElement('div');
-          label.className = 'tooth-label';
-          label.dataset.fdi = fdi;
-          label.textContent = '';
-          container.appendChild(label);
-          state.labels[fdi] = label;
-        });
-        // Positionner les étiquettes sous chaque dent
-        requestAnimationFrame(updateLabelPositions);
-        // Appliquer l'état initial (couleurs et étiquettes)
-        Object.keys(state.dents).forEach((fdi) => updateToothVisual(fdi));
-      })
-      .catch((err) => {
-        console.error('Erreur de chargement du SVG:', err);
+    const svgElement = container.querySelector('svg');
+    if (!svgElement) return;
+    svgElement.style.width = '100%';
+    svgElement.style.height = 'auto';
+    // Récupère tous les groupes de dents identifiés par un id commençant par FDI
+    const groups = svgElement.querySelectorAll('g[id^="FDI_"]');
+    groups.forEach((group) => {
+      const id = group.id;
+      const match = id.match(/\d+/);
+      if (!match) return;
+      const fdi = match[0];
+      group.dataset.fdi = fdi;
+      // Initialiser l'état de la dent si nécessaire
+      if (!state.dents[fdi]) {
+        state.dents[fdi] = { status: 'present', comps: [] };
+      }
+      // Écouteurs d'événements pour les interactions
+      group.addEventListener('click', (e) => {
+        // Ignorer clic droit
+        if (e.button === 2) return;
+        e.preventDefault();
+        handleToothSingleClick(group);
       });
+      group.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        handleToothDoubleClick(group);
+      });
+      group.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        contextTargetFdi = fdi;
+        // Mettre à jour les éléments sélectionnés dans le menu
+        const currentComps = state.dents[fdi].comps;
+        Array.from(contextMenu.querySelectorAll('li')).forEach((li) => {
+          const compCode = li.dataset.comp;
+          if (currentComps.includes(compCode)) {
+            li.classList.add('selected');
+          } else {
+            li.classList.remove('selected');
+          }
+        });
+        contextMenu.style.display = 'block';
+        contextMenu.style.left = `${e.pageX}px`;
+        contextMenu.style.top = `${e.pageY}px`;
+      });
+      // Crée une étiquette pour cette dent
+      const label = document.createElement('div');
+      label.className = 'tooth-label';
+      label.dataset.fdi = fdi;
+      label.textContent = '';
+      container.appendChild(label);
+      state.labels[fdi] = label;
+    });
+    // Positionner les étiquettes sous chaque dent
+    requestAnimationFrame(updateLabelPositions);
+    // Appliquer l'état initial (couleurs et étiquettes)
+    Object.keys(state.dents).forEach((fdi) => updateToothVisual(fdi));
   }
 
   createDentalChart();
@@ -252,12 +241,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       labelEl.textContent = labelText;
     }
+    // reposition labels after any update
+    requestAnimationFrame(updateLabelPositions);
   }
 
   // Met à jour la position des étiquettes en fonction de la position des dents dans le SVG
   function updateLabelPositions() {
     const container = document.getElementById('dental-chart');
     const containerRect = container.getBoundingClientRect();
+    const placed = [];
     // Pour chaque dent enregistrée, recalculer la position de l'étiquette
     Object.keys(state.labels).forEach((fdi) => {
       const group = container.querySelector(`#FDI_${fdi}`);
@@ -265,9 +257,34 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!group || !labelEl) return;
       const bbox = group.getBoundingClientRect();
       const x = bbox.left - containerRect.left + bbox.width / 2;
-      const y = bbox.top - containerRect.top + bbox.height;
+      let y = bbox.top - containerRect.top + bbox.height + 2;
       labelEl.style.left = `${x}px`;
-      labelEl.style.top = `${y + 2}px`;
+      labelEl.style.top = `${y}px`;
+      // éviter le chevauchement simple
+      let rect = labelEl.getBoundingClientRect();
+      let overlap = true;
+      while (overlap) {
+        overlap = false;
+        for (const p of placed) {
+          if (
+            rect.left < p.right &&
+            rect.right > p.left &&
+            rect.top < p.bottom &&
+            rect.bottom > p.top
+          ) {
+            y += rect.height + 2;
+            labelEl.style.top = `${y}px`;
+            rect = labelEl.getBoundingClientRect();
+            overlap = true;
+          }
+        }
+      }
+      placed.push({
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        bottom: rect.bottom,
+      });
     });
   }
 
@@ -296,14 +313,6 @@ document.addEventListener('DOMContentLoaded', () => {
     state.notes = e.target.value;
   });
 
-  // Variables pour la visionneuse 3D
-  let scene;
-  let camera;
-  let renderer;
-  let controls;
-  let modelMesh;
-  let chassisMesh;
-
   // Références à la modale de vision 3D et au bouton de fermeture
   const viewerModal = document.getElementById('viewerModal');
   const closeViewerBtn = document.getElementById('closeViewerBtn');
@@ -329,26 +338,8 @@ document.addEventListener('DOMContentLoaded', () => {
     state.viewerInitialized = true;
   }
 
-  // Ajuste la taille du renderer lors du redimensionnement de la fenêtre
-  function onWindowResize() {
-    const viewer = document.getElementById('viewer');
-    const width = viewer.clientWidth;
-    const height = viewer.clientHeight;
-    if (!camera || !renderer) return;
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
-  }
-
-  // Boucle de rendu
-  function animate() {
-    requestAnimationFrame(animate);
-    if (controls) controls.update();
-    if (renderer && scene && camera) renderer.render(scene, camera);
-  }
-
   // Chargement d'un fichier 3D en un acteur VTK. Renvoie une promesse résolue avec un acteur.
-  async function loadFileToActor(file, rgbColor) {
+  async function loadFileToActor(file, rgbColor, opacity) {
     // rgbColor: tableau de 3 nombres entre 0 et 1
     const fileName = file.name.toLowerCase();
     const ext = fileName.split('.').pop();
@@ -372,6 +363,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const [r, g, b] = rgbColor;
       actor.getProperty().setColor(r, g, b);
     }
+    if (typeof opacity === 'number') {
+      actor.getProperty().setOpacity(opacity);
+    }
     return actor;
   }
 
@@ -392,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Charger le modèle principal
     if (state.modelFile) {
       try {
-        modelActor = await loadFileToActor(state.modelFile, [0.8, 0.8, 1]);
+        modelActor = await loadFileToActor(state.modelFile, [0.7, 0.7, 0.7], 0.6);
         renderer.addActor(modelActor);
       } catch (err) {
         console.error(err);
@@ -402,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Charger le châssis
     if (state.chassisFile) {
       try {
-        chassisActor = await loadFileToActor(state.chassisFile, [1, 0.8, 0.6]);
+        chassisActor = await loadFileToActor(state.chassisFile, [0.1, 0.3, 0.8], 0.9);
         renderer.addActor(chassisActor);
       } catch (err) {
         console.error(err);
@@ -414,49 +408,35 @@ document.addEventListener('DOMContentLoaded', () => {
     renderWindow.render();
   }
 
-  // Ajuste la caméra pour centrer et englober les deux modèles
-  function fitSceneToModels() {
-    const box = new THREE.Box3();
-    let hasContent = false;
-    if (modelMesh) {
-      box.expandByObject(modelMesh);
-      hasContent = true;
-    }
-    if (chassisMesh) {
-      box.expandByObject(chassisMesh);
-      hasContent = true;
-    }
-    if (!hasContent) return;
-    const size = new THREE.Vector3();
-    box.getSize(size);
-    const center = new THREE.Vector3();
-    box.getCenter(center);
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const fov = camera.fov * (Math.PI / 180);
-    let distance = (maxDim / 2) / Math.tan(fov / 2);
-    distance *= 1.5;
-    camera.position.copy(center);
-    camera.position.z += distance;
-    camera.position.y += distance / 4;
-    camera.lookAt(center);
-    controls.target.copy(center);
-  }
-
   // Gestion du bouton d'activation de la visionneuse
   document.getElementById('view3dBtn').addEventListener('click', () => {
     if (!state.modelFile && !state.chassisFile) {
       alert('Veuillez sélectionner au moins un fichier 3D (STL/PLY) avant de visualiser.');
       return;
     }
-    // Charge les modèles et affiche la modale
-    loadViewerModels().catch(() => {});
     viewerModal.style.display = 'block';
+    if (genericRenderWindow) {
+      genericRenderWindow.resize();
+    }
+    loadViewerModels().catch(() => {});
   });
 
   // Bouton de fermeture de la visionneuse
   if (closeViewerBtn) {
     closeViewerBtn.addEventListener('click', () => {
       viewerModal.style.display = 'none';
+      if (genericRenderWindow) {
+        const renderer = genericRenderWindow.getRenderer();
+        if (modelActor) {
+          renderer.removeActor(modelActor);
+          modelActor = null;
+        }
+        if (chassisActor) {
+          renderer.removeActor(chassisActor);
+          chassisActor = null;
+        }
+        genericRenderWindow.getRenderWindow().render();
+      }
     });
   }
 
@@ -476,40 +456,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Crée un objet JSON décrivant le cas actuel
   function generateResultJson() {
-    const result = {};
+    const dents = {};
     let hasMaxilla = false;
     let hasMandible = false;
     for (const fdi of Object.keys(state.dents)) {
-      const firstDigit = fdi.charAt(0);
       const data = state.dents[fdi];
-      // On ne considère l'arcade comme active que si au moins une dent a un état particulier ou un composant
+      dents[fdi] = {
+        status: data.status,
+        comps: Array.from(data.comps),
+      };
       const isActive = data.status !== 'present' || (data.comps && data.comps.length > 0);
-      if (!isActive) continue;
-      if (firstDigit === '1' || firstDigit === '2') {
-        hasMaxilla = true;
-      } else if (firstDigit === '3' || firstDigit === '4') {
-        hasMandible = true;
+      if (isActive) {
+        const firstDigit = fdi.charAt(0);
+        if (firstDigit === '1' || firstDigit === '2') hasMaxilla = true;
+        if (firstDigit === '3' || firstDigit === '4') hasMandible = true;
       }
     }
-    let arcade = '';
-    if (hasMaxilla && !hasMandible) arcade = 'maxillaire';
-    else if (!hasMaxilla && hasMandible) arcade = 'mandibulaire';
-    else if (hasMaxilla && hasMandible) arcade = 'mixte';
-    result.arcade = arcade;
-    result.connecteur_majeur = state.connecteur || null;
-    result.classe_de_kennedy = state.classeKennedy || null;
-    result.modifications = parseInt(state.modifications, 10);
-    result.tiges_de_coulee = !!state.tiges;
-    result.notes = state.notes || '';
-    result.dents = {};
-    for (const fdi of Object.keys(state.dents)) {
-      const data = state.dents[fdi];
-      result.dents[fdi] = {
-        statut: data.status,
-        composants: Array.from(data.comps),
-      };
-    }
-    return result;
+    return {
+      dents,
+      global: {
+        connecteur: state.connecteur || '',
+        classeKennedy: state.classeKennedy || '',
+        modifications: parseInt(state.modifications, 10),
+        tiges: !!state.tiges,
+        notes: state.notes || '',
+        active_maxillaire: hasMaxilla,
+        active_mandibulaire: hasMandible,
+      },
+    };
   }
 
   // Gestion du bouton pour enregistrer l'ensemble du dossier en un dataset (zip)
@@ -522,7 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Génération du JSON
     const result = generateResultJson();
     // Vérifie qu'il y a une arcade active
-    if (!result.arcade) {
+    if (!result.global.active_maxillaire && !result.global.active_mandibulaire) {
       alert('Aucune arcade active n\'a été renseignée (ajoutez une selle, une dent manquante ou un composant).');
       return;
     }
@@ -531,14 +505,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ajout des fichiers STL/PLY s'ils existent
     if (state.modelFile) {
       const buffer = await state.modelFile.arrayBuffer();
-      // Ajoute une extension neutre (.data) pour éviter le blocage de Windows sur les fichiers STL/PLY
-      const safeName = state.modelFile.name + '.data';
-      zip.file(safeName, buffer);
+      zip.file('modele.data', buffer);
     }
     if (state.chassisFile) {
       const buffer = await state.chassisFile.arrayBuffer();
-      const safeName = state.chassisFile.name + '.data';
-      zip.file(safeName, buffer);
+      zip.file('chassis.data', buffer);
     }
     zip.file('annotations.json', jsonString);
     // Détermination du nom du dataset : UTD-xx
