@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Application de conception de stellites</title>
+  <!-- Fichier de styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Application d'annotation de stellites</h1>
+
+  <!-- Section d'importation des fichiers 3D et bouton de prévisualisation -->
+  <section id="files-section" class="section">
+    <h2>Importation des modèles 3D</h2>
+    <div class="field-group">
+      <label for="modelFile">Modèle de travail (.STL/.PLY):</label>
+      <input type="file" id="modelFile" accept=".stl,.STL,.ply,.PLY" />
+    </div>
+    <div class="field-group">
+      <label for="chassisFile">Châssis prothétique (.STL/.PLY):</label>
+      <input type="file" id="chassisFile" accept=".stl,.STL,.ply,.PLY" />
+    </div>
+    <button id="view3dBtn">Activer la visualisation 3D</button>
+  </section>
+
+  <!-- Conteneur principal : schéma dentaire à gauche et paramètres à droite -->
+  <div id="main-container" class="main-container">
+    <!-- Section du schéma dentaire -->
+    <section id="dental-section" class="section left-column">
+      <h2>Schéma dentaire interactif</h2>
+      <p>Cliquez sur une dent pour marquer une selle (simple clic), faites un double clic pour indiquer une dent absente (M). Faites un clic droit pour associer des composants.</p>
+      <div id="dental-chart" class="dental-chart"></div>
+    </section>
+
+    <!-- Section des paramètres et sélection des connecteurs/composants -->
+    <section id="parameters-section" class="section right-column">
+      <h2>Paramètres généraux</h2>
+      <div class="field-group">
+        <label for="connecteurSelect">Connecteur majeur :</label>
+        <select id="connecteurSelect">
+          <option value="">-- Choisir --</option>
+          <option value="Barre">Barre</option>
+          <option value="Plaque">Plaque</option>
+          <option value="Plaque pleine">Plaque pleine</option>
+          <option value="Plaque ajourée">Plaque ajourée</option>
+          <option value="Fer à cheval">Fer à cheval</option>
+          <option value="Bandeau palatin">Bandeau palatin</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="classeKennedySelect">Classe de Kennedy :</label>
+        <select id="classeKennedySelect">
+          <option value="">-- Choisir --</option>
+          <option value="I">Classe I</option>
+          <option value="II">Classe II</option>
+          <option value="III">Classe III</option>
+          <option value="IV">Classe IV</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="modificationsSelect">Nombre de modifications :</label>
+        <select id="modificationsSelect">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label><input type="checkbox" id="tigesCheckbox" /> Présence de tiges de coulée</label>
+      </div>
+      <div class="field-group">
+        <label for="notes">Notes / commentaires :</label>
+        <textarea id="notes" rows="3" placeholder="Notes supplémentaires"></textarea>
+      </div>
+      <button id="exportBtn" class="export-btn">Exporter en JSON</button>
+      <button id="saveDatasetBtn" class="export-btn" style="margin-left: 10px;">Enregistrer le dataset</button>
+      <a id="downloadLink" style="display: none;">Télécharger le fichier JSON</a>
+    </section>
+  </div>
+
+  <!-- Fenêtre contextuelle pour la visionneuse 3D -->
+  <div id="viewerModal" class="viewer-modal" style="display: none;">
+    <button id="closeViewerBtn" class="close-button">✕</button>
+    <div id="viewer" class="viewer"></div>
+  </div>
+  <!-- Menu contextuel pour sélection de composants -->
+  <ul id="context-menu" class="context-menu">
+    <li data-comp="S">Crochet Simple (S)</li>
+    <li data-comp="SI">Crochet Simple inversé (SI)</li>
+    <li data-comp="A">Crochet Ackers (A)</li>
+    <li data-comp="AI">Crochet Ackers inversé (AI)</li>
+    <li data-comp="NM">Crochet Nally-Martinet (NM)</li>
+    <li data-comp="R">Crochet Roach (R)</li>
+    <li data-comp="C">Crochet Contournant (C)</li>
+    <li data-comp="FS">Fil cingulaire/coronaire (FS)</li>
+    <li data-comp="PM">Potence mésiale (PM)</li>
+    <li data-comp="PD">Potence distale (PD)</li>
+    <li data-comp="TM">Taquet mésial (TM)</li>
+    <li data-comp="TD">Taquet distal (TD)</li>
+  </ul>
+
+  <!-- Script principal de l'application -->
+  <!-- JSZip pour la création d'archives -->
+  <script src="lib/jszip.min.js"></script>
+  <!-- Import de vtk.js via CDN pour la visualisation 3D -->
+  <script src="https://unpkg.com/vtk.js"></script>
+  <!-- Script principal de l'application -->
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+/* Style global pour l'application de stellites */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.section {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.field-group {
+  margin-bottom: 15px;
+}
+
+.field-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.field-group input[type="file"],
+.field-group select,
+.field-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+/* Conteneur de la visionneuse 3D. Les dimensions seront redéfinies dans la modale. */
+.viewer {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 4px;
+}
+
+.export-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #0078d7;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.export-btn:hover {
+  background-color: #005fa3;
+}
+
+/* Disposition en colonnes pour le schéma et les paramètres */
+.main-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.left-column {
+  flex: 1 1 50%;
+  min-width: 300px;
+}
+
+.right-column {
+  flex: 1 1 40%;
+  min-width: 260px;
+}
+
+/* Fenêtre modale pour la visionneuse 3D */
+/* Fenêtre modale pour la visionneuse 3D.  
+   Elle apparaît en surimpression au-dessus de la colonne des paramètres généraux (à droite).
+   La largeur et la hauteur sont réduites pour ne pas recouvrir tout l'écran. */
+.viewer-modal {
+  position: fixed;
+  top: 80px;        /* décale du haut de la page pour libérer la zone d'importation */
+  right: 5%;        /* ancrée à droite au-dessus de la colonne de paramètres */
+  width: 40%;
+  height: 50%;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  z-index: 2000;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.viewer-modal .viewer {
+  width: 100%;
+  height: calc(100% - 40px);
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Bouton de fermeture de la modale */
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+.close-button:hover {
+  color: #000;
+}
+
+/* Dental chart styles */
+/* Conteneur du schéma dentaire : position relative pour placer les dents */
+.dental-chart {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin: 10px auto;
+}
+
+/* Étiquette sous chaque dent (positionnée dynamiquement) */
+.tooth-label {
+  position: absolute;
+  font-size: 10px;
+  white-space: nowrap;
+  text-align: center;
+  color: #333;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+/* Context menu styles */
+.context-menu {
+  position: absolute;
+  display: none;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 5px 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  min-width: 200px;
+}
+
+.context-menu li {
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.context-menu li:hover {
+  background-color: #f0f0f0;
+}
+
+/* Mise en évidence des composants sélectionnés dans le menu contextuel */
+.context-menu li.selected {
+  /* Mettez en évidence les éléments sélectionnés dans le menu contextuel */
+  background-color: #d0eaff;
+  border-left: 3px solid #0078d7;
+  font-weight: bold;
+}
+
+@media (max-width: 600px) {
+  .tooth {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+  .viewer {
+    height: 300px;
+  }
+}
